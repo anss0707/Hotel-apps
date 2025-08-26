@@ -91,6 +91,50 @@
 
   <!-- Template Main JS File -->
   <script src="{{asset('assets/js/main.js')}}"></script>
+  <script>
+    //variable
+    //let (nilai bisa di ubah), var (jadul sama seperti let), const ( nilai tidak boleh berubah)
+
+    let category_id = document.getElementById('category_id');
+    let roomId  = document.getElementById('room_id');
+    category_id.addEventListener('change', async function() {
+        alert('Duarrrr');
+        const id_category = this.value;
+
+        //fetch = fetching atau ambil data dari backend,
+        //axios()
+        //async (load data yang paling ringan)
+        roomId.innerHTML = "<option data-price value=''>Pilih Kamar..</option>"
+        try {
+
+        } catch (error) {
+            console.log("error", error);
+
+        }
+        const res = await fetch(`/get-room-by-category/${id_category}`);
+
+        const data = await res.json();
+        data.data.forEach(room => {
+            const option = document.createElement('option');
+            option.value = room.id;
+            option.textContent = `${room.name}`;
+            option.setAttribute('data-price', room.price);
+            roomId.appendChild(option);
+        });
+
+    });
+
+    roomId.addEventListener('change', function(){
+        const selectedOption = this.options[this.selectedIndex];
+        const price = selectedOption.getAttribute('data-price') || 0;
+        const rupiah = new Intl.NumberFormat("id-ID", {
+            style: "currency",
+            currency: "IDR"
+        }).format(price);
+        document.getElementById('roomRate').textContent = rupiah
+    });
+
+  </script>
 
 </body>
 

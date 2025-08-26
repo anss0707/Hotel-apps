@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+// use App\Http\Controllers\GuestController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -22,6 +23,15 @@ Route::resource('dashboard', \App\Http\Controllers\DashboardController::class);
 Route::resource('user', \App\Http\Controllers\UserController::class);
 Route::resource('categories', \App\Http\Controllers\CategoriesController::class);
 Route::resource('room', \App\Http\Controllers\RoomController::class);
+Route::resource('reservation', \App\Http\Controllers\ReservationController::class);
+
+Route::get('get-room-by-category/{id}', [\App\Http\Controllers\ReservationController::class, 'getRoomByCategory'])
+    ->name('get-room-by-category');
+
+Route::get('guestinformation', [\App\Http\Controllers\GuestController::class, 'index']);
+Route::get('guestinformation/create', [\App\Http\Controllers\GuestController::class, 'create']);
+Route::post('guestinformation/store', [\App\Http\Controllers\GuestController::class, 'store'])->name('guest.store');
+Route::get('guestinformation/edit/{id}', [\App\Http\Controllers\GuestController::class, 'edit'])->name('guest.edit');
 
 //MATERI ARTIMATIKA
 Route::get("tambah", [\App\Http\Controllers\BelajarController::class, 'tambah'])->name('tambah');
