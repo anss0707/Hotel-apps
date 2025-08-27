@@ -8,6 +8,7 @@
   <title>{{ $title ?? 'Management Hotel' }}</title>
   <meta content="" name="description">
   <meta content="" name="keywords">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
 
   <!-- Favicons -->
   <link href="{{asset('assets/img/favicon.png')}}" rel="icon">
@@ -95,8 +96,25 @@
     //variable
     //let (nilai bisa di ubah), var (jadul sama seperti let), const ( nilai tidak boleh berubah)
 
+    // function namaFunction()
+
+    const rupiahFormat = (value) => {
+        return new Intl.NumberFormat("id-ID", {
+            style: "currency",
+            currency: "IDR"
+        }).format(value);
+    }
+
+
     let category_id = document.getElementById('category_id');
     let roomId  = document.getElementById('room_id');
+    const roomRateText = document.getElementById('roomRate');
+    const totalNightText = document.getElementById('totalNight');
+    const subtotalText = document.getElementById('subtotal');
+    const taxText = document.getElementById('tax');
+    const totalAmountText = document.getElementById('totalAmount');
+
+    let roomRate = 0;
     category_id.addEventListener('change', async function() {
         alert('Duarrrr');
         const id_category = this.value;
@@ -124,16 +142,106 @@
 
     });
 
-    roomId.addEventListener('change', function(){
+    roomId.addEventListener('change', function (){
         const selectedOption = this.options[this.selectedIndex];
-        const price = selectedOption.getAttribute('data-price') || 0;
-        const rupiah = new Intl.NumberFormat("id-ID", {
-            style: "currency",
-            currency: "IDR"
-        }).format(price);
-        document.getElementById('roomRate').textContent = rupiah
-    });
+        roomRate = selectedOption.getAttribute('data-price') || 0;
 
+        roomRateText.textContent = rupiahFormat(roomRate);
+        calculateTotal()
+        document.getElementById('roomRateVal').value = roomRate;
+    });
+    //const adalah variable
+    //checkin id yang di ambil dari create
+    //document adalah seluruh isi dari create
+    const checkInInput = document.getElementById('checkin');
+    const checkOutInput = document.getElementById('checkout');
+    function calculateTotal()
+    {
+        const checkin = new Date(checkInInput.value);
+        const checkout = new Date(checkOutInput.value);
+
+        if (checkin && checkout > checkin) {
+            const timeDiff = checkout - checkin;
+            const night = timeDiff / (1000 * 60 * 60 * 24); //86.400.000 (hitungan hari , 1000 (mili detik) 60 (1 menit) 60 (1 jam) 24 (1 hari))
+
+            const subtotal = roomRate * night;
+            const tax = subtotal * 0.1;
+            const grandTotal = subtotal + tax; //220.000
+
+            //implementasi ke halaman
+            totalNightText.textContent = night;
+            subtotalText.textContent = rupiahFormat(subtotal);
+            taxText.textContent = rupiahFormat(tax);
+            totalAmountText.textContent = rupiahFormat(grandTotal);
+
+            document.getElementById('subTotalVal').value = subtotal;
+            document.getElementById('taxVal').value = tax;
+            document.getElementById('totalAmountVal').value = grandTotal;
+        }
+    }
+
+    checkInInput.addEventListener('change', calculateTotal);
+    checkOutInput.addEventListener('change', calculateTotal);
+
+    document.getElementById('save').addEventListener('click',async function(){
+
+        const guest_name = document.querySelector('input[name="guest_name"]').value;
+        const guest_email = document.querySelector('input[name="guest_email"]').value;
+        const guest_phone = document.querySelector('input[name="guest_phone"]').value;
+        const room_id = document.querySelector('#room_id').value;
+        const guest_room_number = document.querySelector('select[name="guest_room_number"]').value;
+        const guest_note = document.querySelector('textarea[name="guest_note"]').value;
+        const guest_check_in = document.querySelector('input[name="guest_check_in"]').value;
+        const guest_check_out = document.querySelector('input[name="guest_check_out"]').value;
+        const payment_method = document.querySelector('select[name="payment_method"]').value;
+        const guest_qty = document.querySelector('select[name="guest_qty"]').value;
+        const subtotal = document.querySelector('#subTotalVal').value;
+        const nights = document.querySelector('#totalNight').textContent;
+        const tax = document.querySelector('#taxVal').value;
+        const TotalAmount = document.querySelector('#totalAmountVal').value;
+        const token = document.querySelector("meta[name='csrf-token']").getAttribute('content');
+        const reservation_number = "RSV-270893-001";
+
+        const data = {
+            reservation_number: reservation_number,
+            guest_name: guest_name,
+            guest_email: guest_email,
+            guest_phone: guest_phone,
+            guest_room_number: guest_room_number,
+            guest_note: guest_note,
+            room_id: room_id,
+            guest_checkin: guest_check_in,
+            guest_checkout: guest_check_out,
+            payment_method: payment_method,
+            guest_qty: guest_qty,
+            subtotal: subtotal.replace('/[^\d]/g', ''),
+            tax: tax,
+            totalNight: totalNight,
+            totalAmount: totalAmount
+        };
+        try {
+            const res = await fetch(`/reservation`, {
+                method:"POST",
+                headers: {
+                    "Content-Type":"application/json",
+                    "Accept":"application/json",
+                    "X-CSRF-TOKEN":token
+                },
+                body:
+                    JSON.stringify(data)
+
+            }); //get
+            const result = await res.json()
+            if(res.ok){
+                alert('success');
+            }
+        } catch (error) {
+            console.log("error", error);
+            alert('Ups Reservasi Gagal')
+
+        }
+
+    });
   </script>
 
 </body>

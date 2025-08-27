@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('guest_id_card', 100)->nullable();
             $table->string('guest_qty', 10)->nullable();
             $table->date('guest_check_in');
-            $table->date('guest_check_ou');
+            $table->date('guest_check_out');
             $table->text('guest_note')->nullable();
             $table->tinyInteger('isOnline')->default(0)->nullable();
             $table->tinyInteger('isReserve')->default(0)->nullable();
