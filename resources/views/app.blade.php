@@ -199,8 +199,8 @@
         const nights = document.querySelector('#totalNight').textContent;
         const tax = document.querySelector('#taxVal').value;
         const TotalAmount = document.querySelector('#totalAmountVal').value;
-        const token = document.querySelector("meta[name='csrf-token']").getAttribute('content');
-        const reservation_number = "RSV-270893-001";
+        const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        const reservation_number = document.querySelector('input[name="reservation_number"]').value;
 
         const data = {
             reservation_number: reservation_number,
@@ -210,14 +210,14 @@
             guest_room_number: guest_room_number,
             guest_note: guest_note,
             room_id: room_id,
-            guest_checkin: guest_check_in,
-            guest_checkout: guest_check_out,
+            guest_check_in: guest_check_in,
+            guest_check_out: guest_check_out,
             payment_method: payment_method,
             guest_qty: guest_qty,
             subtotal: subtotal.replace('/[^\d]/g', ''),
             tax: tax,
-            totalNight: totalNight,
-            totalAmount: totalAmount
+            totalNight: nights,
+            totalAmount: TotalAmount
         };
         try {
             const res = await fetch(`/reservation`, {
@@ -234,6 +234,10 @@
             const result = await res.json()
             if(res.ok){
                 alert('success');
+                setTimeout(() => {
+                    window.location.href ="/reservation"
+
+                }, 3000); //3000 mili sec = 3 detik
             }
         } catch (error) {
             console.log("error", error);

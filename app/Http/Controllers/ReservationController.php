@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Reservations;
 use App\Models\Rooms;
 use App\Models\Categories;
+use Carbon\Carbon;
 
 
 class ReservationController extends Controller
@@ -13,9 +14,30 @@ class ReservationController extends Controller
     /**
      * Display a listing of the resource.
      */
+    public function createReservationNumber()
+    {
+        //RSV-TODAY-001
+        $code_format = "RSV";
+        $today  = Carbon::now()->format('Ymd'); //20250828
+        $prefix = $code_format . "_" . $today . "_";
+
+        $lastReservation = Reservations::whereDate('created_at', Carbon::today())
+            ->orderBy('id', 'desc')->first();
+
+        if ($lastReservation) {
+            $lastNumber = substr($lastReservation->reservation_number, -3); //substr untuk mengambil huruf baik di belakang ataupun di depan (-3 dari belakang -0,3 dari depan)
+            //$lastNumber = $lastReservation-
+            $newNumber = str_pad($lastNumber, 3, "0", STR_PAD_LEFT);
+        } else {
+            $newNumber = "001";
+        }
+        $reservation_number = $prefix . $newNumber;
+
+        return $reservation_number;
+    }
     public function index()
     {
-        $datas = Reservations::orderBy('id', 'desc')->get();
+        $datas = Reservations::with('room')->orderBy('id', 'desc')->get();
         $title = "Data Reservasi";
         return view('reservation.index', compact('datas', 'title'));
     }
@@ -25,8 +47,9 @@ class ReservationController extends Controller
      */
     public function create()
     {
+        $reservation_number = $this->createReservationNumber();
         $categories = Categories::get();
-        return view('reservation.create', compact('categories'));
+        return view('reservation.create', compact('categories', 'reservation_number'));
     }
 
     /**
@@ -70,6 +93,7 @@ class ReservationController extends Controller
                 'tax' => $request->tax,
                 'totalAmount' => $request->totalAmount,
                 'totalNight' => $request->totalNight,
+                'isReserve' => 1,
             ];
             $create = Reservations::create($data);
             return response()
